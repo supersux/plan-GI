@@ -1,10 +1,7 @@
-import easyocr
 import pyautogui
 import win32con
 import win32gui
 import win32ui
-
-reader = easyocr.Reader(['en'])
 
 
 # 指定区域截图
@@ -38,11 +35,6 @@ def screenshot(hwnd, left=0, top=0, right=0, bottom=0, file="test"):
 
 def screenshot_rect(hwnd, rect=(0, 0, 0, 0), file="test"):
     screenshot(hwnd, rect[0], rect[1], rect[2], rect[3], file)
-
-
-# 读取图像内容
-def parse(file=""):
-    return reader.readtext(file)
 
 
 # 模拟点击

@@ -1,7 +1,7 @@
 import re
 import time
 
-import deal_operator as operator
+import helper as helper
 
 # 属性的坐标
 POS_ATTR = (130, 183)
@@ -27,15 +27,15 @@ IMG_CHARACTER = "./tmp/character.jpg"
 IMG_DETAIL = "./tmp/detail.jpg"
 
 
-def content_ocr(hwnd, pos, rect):
+def content_ocr(hwnd, pos, rect, parser):
     # 切换界面
-    operator.click_pos(pos)
-    time.sleep(1)
+    helper.click_pos(pos)
+    time.sleep(0.5)
     # 区域截图
-    operator.screenshot_rect(hwnd, rect, IMG_DETAIL)
+    helper.screenshot_rect(hwnd, rect, IMG_DETAIL)
     time.sleep(0.1)
     # OCR识别
-    return operator.parse(IMG_DETAIL)
+    return parser.parse(IMG_DETAIL)
 
 
 def extract_num(item):
@@ -47,6 +47,7 @@ def extract_num(item):
         return 1
 
 
+# 扫描器基类
 class BaseScanner(object):
     def __init__(self, hwnd, offset_x, offset_y, _on_completed=None):
         self.hwnd = hwnd
@@ -54,14 +55,16 @@ class BaseScanner(object):
         self.offset_y = offset_y
         self._on_completed = _on_completed
 
-    def scan(self):
+    def scan(self, parser):
         pass
 
 
+# 属性扫描器
 class AttrScanner(BaseScanner):
-    def scan(self):
+    def scan(self, parser):
         print("基础属性读取中!")
-        result = content_ocr(self.hwnd, POS_ATTR, CHARACTER_DETAIL_RECT)
+        pos = (POS_ATTR[0] + self.offset_x, POS_ATTR[1] + self.offset_y)
+        result = content_ocr(self.hwnd, pos, CHARACTER_DETAIL_RECT, parser)
         character = {'isTraveler': True}
         # 处理识别结果，这里只解析角色名称以及角色等级
         for index, item in enumerate(result):
@@ -82,10 +85,12 @@ class AttrScanner(BaseScanner):
             self._on_completed(character, CharacterPackager())
 
 
+# 天赋扫描器
 class WeaponScanner(BaseScanner):
-    def scan(self):
+    def scan(self, parser):
         print("武器读取中!")
-        result = content_ocr(self.hwnd, POS_WEAPON, WEAPON_DETAIL_RECT)
+        pos = (POS_WEAPON[0] + self.offset_x, POS_WEAPON[1] + self.offset_y)
+        result = content_ocr(self.hwnd, pos, WEAPON_DETAIL_RECT, parser)
         weapon = {}
         # 处理识别结果
         for index, item in enumerate(result):
@@ -110,10 +115,10 @@ class WeaponScanner(BaseScanner):
             self._on_completed(weapon, WeaponPackager())
 
 
+# 命座扫描器
 class ConstellationScanner(BaseScanner):
-
     # 需要图像识别训练
-    def scan(self):
+    def scan(self, parser):
         print("命座读取中!")
 
         # 按下坐标(130,392)
@@ -122,10 +127,12 @@ class ConstellationScanner(BaseScanner):
         pass
 
 
+# 天赋扫描器
 class TalentsScanner(BaseScanner):
-    def scan(self):
+    def scan(self, parser):
         print("天赋读取中!")
-        result = content_ocr(self.hwnd, POS_TALE, TALENTS_DETAIL_RECT)
+        pos = (POS_TALE[0] + self.offset_x, POS_TALE[1] + self.offset_y)
+        result = content_ocr(self.hwnd, pos, TALENTS_DETAIL_RECT, parser)
         talents = []
         # 处理识别结果
         for index, item in enumerate(result):

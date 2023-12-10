@@ -2,6 +2,7 @@ import json
 
 import win32gui
 
+import parser
 import scanner
 
 # 路由字典
@@ -21,22 +22,16 @@ def read_from_json(file):
         return json.load(json_file)
 
 
-def gen_code_dict():
-    character = read_from_json('./src/character.json')
-    for key, value in character.items():
-        character_router_dict[value['route']] = key
-
-    weapon = read_from_json('./src/weapon.json')
-    for key, value in weapon.items():
-        weapon_router_dict[value['route']] = key
-    print(weapon_router_dict)
-
-    pass
+def gen_code_dict(src, des):
+    content = read_from_json(src)
+    for key, value in content.items():
+        des[value['route']] = key
 
 
-def test():
-    gen_code_dict()
-    pass
+# 创建名称和武器路由字典
+def init():
+    gen_code_dict('./src/character.json', character_router_dict)
+    gen_code_dict('./src/weapon.json', weapon_router_dict)
 
 
 def execute():
@@ -46,23 +41,28 @@ def execute():
     # 激活窗口
     win32gui.SetForegroundWindow(hwnd)
     win32gui.SetActiveWindow(hwnd)
+    # 创建OCR扫描工具
+    operator = parser.EasyOCRParser()
     # 进入角色信息界面
-    # pyautogui.press('c')
-    # 角色信息扫描
-    # sc = scanner.AttrScanner(hwnd, left, top, callback)
-    # sc.scan()
-    # 武器信息扫描
-    # sc = scanner.WeaponScanner(hwnd, left, top, callback)
-    # sc.scan()
-
-    # 天赋信息扫描
-    sc = scanner.TalentsScanner(hwnd, left, top, callback)
-    sc.scan()
+    # helper.press('c')
+    character_scan(hwnd, left, top, operator)
 
     # print("executes")
 
     # 兼容性处理
     # 将扫描结果导出json文件
+
+
+def character_scan(hwnd, left, top, op):
+    # 角色信息扫描
+    sc = scanner.AttrScanner(hwnd, left, top, callback)
+    sc.scan(op)
+    # 武器信息扫描
+    sc = scanner.WeaponScanner(hwnd, left, top, callback)
+    sc.scan(op)
+    # 天赋信息扫描
+    sc = scanner.TalentsScanner(hwnd, left, top, callback)
+    sc.scan(op)
 
 
 def callback(result, packager: scanner.BasePackager):
