@@ -10,7 +10,7 @@ class BaseOCRParser:
 # 基于EasyOCR的实现
 class EasyOCRParser(BaseOCRParser):
     def __init__(self):
-        self.reader = easyocr.Reader(['en', 'ch_sim'])
+        self.reader = easyocr.Reader(['en'])
 
     def parse(self, file):
         return self.reader.readtext(file)

@@ -1,3 +1,8 @@
+# 模拟输入以及截图等操作
+
+import json
+import time
+
 import pyautogui
 import win32con
 import win32gui
@@ -44,9 +49,18 @@ def click(pos_x, pos_y):
 
 # 模拟坐标点击
 def click_pos(pos):
-    pyautogui.click(pos[0], pos[1])
+    click(pos[0], pos[1])
 
 
 # 模拟按键
 def press(key):
     pyautogui.press(key)
+
+
+def sleep(secs):
+    time.sleep(secs)
+
+
+def read_from_json(file):
+    with open(file, 'r', encoding='utf-8') as json_file:
+        return json.load(json_file)
