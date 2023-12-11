@@ -1,21 +1,8 @@
 # 数据处理中心，将扫描结果进行归纳整理
 import router
 
-CHARACTER_TRAVELER = '10000007'
-CHARACTER_WANDERER = '10000075'
-
 CHARACTER_KEY_WEAPON = 'weapon'
 CHARACTER_KEY_TALENTS = 'talents'
-
-
-def query_character_code(src):
-    name = src['name']
-    # 读取角色编码
-    if name in router.character_router_dict.keys():
-        return router.character_router_dict[name]
-    else:
-        # 旅行者和流浪者的特殊处理
-        return CHARACTER_TRAVELER if src['isTraveler'] else CHARACTER_WANDERER
 
 
 class BasePackager:
@@ -28,9 +15,9 @@ class BasePackager:
 
 class CharacterPackager(BasePackager):
     def package(self, src, des):
-        code = query_character_code(src)
+        code = router.query_character_code(src)
         if code in des.keys():
-            des.update((code, src))
+            des[code].update(src)
         else:
             des[code] = src
         des[code]['sid'] = code
@@ -45,7 +32,7 @@ class WeaponPackager(BasePackager):
             src['sid'] = code
         # 将weapon信息写入character
         if CHARACTER_KEY_WEAPON in des[self.parent].keys():
-            des.update((CHARACTER_KEY_WEAPON, src))
+            des[self.parent][CHARACTER_KEY_WEAPON].update(src)
         else:
             des[self.parent][CHARACTER_KEY_WEAPON] = src
 
@@ -54,7 +41,8 @@ class TalentsPackager(BasePackager):
     def package(self, src, des):
         # 将天赋信息写入character
         if CHARACTER_KEY_TALENTS in des[self.parent].keys():
-            des.update((CHARACTER_KEY_TALENTS, src))
+            des[self.parent][CHARACTER_KEY_TALENTS].clear()
+            des[self.parent][CHARACTER_KEY_TALENTS].extend(src)
         else:
             des[self.parent][CHARACTER_KEY_TALENTS] = src
 
@@ -65,4 +53,4 @@ def gen_character_code(src):
         return router.character_router_dict[name]
     else:
         # 旅行者和流浪者的特殊处理
-        return CHARACTER_TRAVELER if src['isTraveler'] else CHARACTER_WANDERER
+        return router.CHARACTER_TRAVELER if src['isTraveler'] else router.CHARACTER_WANDERER

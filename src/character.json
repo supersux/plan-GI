@@ -1200,5 +1200,19 @@
     ],
     "route": "Dendro Traveler Girl",
     "release": 1657659600
+  },
+  "10000007": {
+    "id": "10000007",
+    "rank": 5,
+    "name": "旅行者",
+    "element": "All",
+    "weaponType": "WEAPON_SWORD_ONE_HAND",
+    "icon": "UI_AvatarIcon_PlayerGirl",
+    "birthday": [
+      0,
+      0
+    ],
+    "route": "Traveler",
+    "release": 1657659600
   }
 }

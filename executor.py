@@ -7,6 +7,9 @@ import parser
 import router
 import scanner
 
+# 翻页坐标
+POS_TURN_PAGE = (87, 568)
+FILE_CHARACTER = './output/character_user.json'
 # 用户信息字典
 character_user_dict = {}
 
@@ -36,6 +39,12 @@ def execute():
         operator = parser.EasyOCRParser()
         # 执行扫描
         character_scan(hwnd, left, top, operator)
+        # 输出到文件
+        out_to_file(FILE_CHARACTER, character_user_dict)
+
+
+def callback(result, pkg: packager.BasePackager):
+    pkg.package(result, character_user_dict)
 
 
 # 进入角色页面，当前方案是多次ESC之后点击屏幕中心进入主界面，之后再键入C进入角色界面
@@ -57,18 +66,36 @@ def open_wish_page():
     helper.sleep(0.5)
 
 
+def next_character(left, top):
+    helper.click(POS_TURN_PAGE[0] + left, POS_TURN_PAGE[1] + top)
+    helper.sleep(0.5)
+
+
 def character_scan(hwnd, left, top, operator):
+    loop_list = []
+    while True:
+        character = do_character_scan(hwnd, left, top, operator)
+        print('%s 读取完成...' % router.character_reverse_router_dict[character])
+        if character in loop_list:
+            break
+        loop_list.append(character)
+        # 切换到下一个角色
+        next_character(left, top)
+    loop_list.clear()
+
+
+def do_character_scan(hwnd, left, top, operator):
     # 角色信息扫描
     sc = scanner.AttrScanner(hwnd, left, top, callback)
     character = sc.scan(operator, 'root')
     # 武器信息扫描
     sc = scanner.WeaponScanner(hwnd, left, top, callback)
     sc.scan(operator, character)
-    # # 天赋信息扫描
+    # 天赋信息扫描
     sc = scanner.TalentsScanner(hwnd, left, top, callback)
     sc.scan(operator, character)
+    return character
 
 
-def callback(result, pkg: packager.BasePackager):
-    pkg.package(result, character_user_dict)
-    print(character_user_dict)
+def out_to_file(path, src_dict):
+    helper.out_to_json(path, src_dict)

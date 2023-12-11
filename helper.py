@@ -1,6 +1,7 @@
 # 模拟输入以及截图等操作
 
 import json
+import os.path
 import time
 
 import pyautogui
@@ -61,6 +62,19 @@ def sleep(secs):
     time.sleep(secs)
 
 
-def read_from_json(file):
-    with open(file, 'r', encoding='utf-8') as json_file:
+def read_from_json(path):
+    with open(path, 'r', encoding='utf-8') as json_file:
         return json.load(json_file)
+
+
+def out_to_json(path, src_dict):
+    folder_path = path[0:path.rindex('/')]
+    mkdir(folder_path)
+    with open(path, 'w') as dump_file:
+        json.dump(src_dict, dump_file)
+
+
+def mkdir(path):
+    folder = os.path.exists(path)
+    if not folder:
+        os.makedirs(path)

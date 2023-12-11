@@ -3,6 +3,7 @@ import time
 
 import helper
 import packager
+import router
 
 # 属性的坐标
 POS_ATTR = (130, 183)
@@ -12,8 +13,6 @@ POS_WEAPON = (130, 252)
 POS_TELL = (130, 392)
 # 天赋的坐标
 POS_TALE = (130, 464)
-# 翻页坐标
-POS_TURN_PAGE = (87, 568)
 # 粉球
 POS_ACQUAINT = (87, 568)
 # 蓝球
@@ -104,15 +103,16 @@ class AttrScanner(BaseScanner):
         return character
 
     def fire(self, payload, parent):
-        payload['parent'] = parent
         # 回调解析结果
         if self._on_completed and callable(self._on_completed):
             self._on_completed(payload, packager.CharacterPackager(parent))
-        return packager.query_character_code(payload)
+        return router.query_character_code(payload)
 
 
 # 天赋扫描器
 class WeaponScanner(BaseScanner):
+    TYPE = ['Sword', 'Claymore', 'Bow', 'Polearm', 'Catalyst']
+
     def __init__(self, hwnd, offset_x, offset_y, _on_completed=None):
         super().__init__(hwnd, offset_x, offset_y, _on_completed)
         self.offset_x = POS_WEAPON[0] + offset_x
@@ -120,14 +120,20 @@ class WeaponScanner(BaseScanner):
 
     def gen_payload(self, result):
         weapon = {}
+        prepared = False
         # 处理识别结果
         for index, item in enumerate(result):
-            if index == 0:
-                weapon['name'] = item[1]
+            # 处理文本换行的场景
+            if not prepared:
+                if item[1] in WeaponScanner.TYPE:
+                    weapon['type'] = item[1]
+                    names = []
+                    for i in range(0, index):
+                        names.append(result[i][1])
+                    weapon['name'] = ' '.join(names)
+                    prepared = True
                 continue
-            if index == 1:
-                weapon['type'] = item[1]
-                continue
+
             if isinstance(item[1], str):
                 start = item[1].find('Lv')
                 if start >= 0:
@@ -169,7 +175,6 @@ class TalentsScanner(BaseScanner):
             start = item[1].find('Lv')
             if start >= 0:
                 talents.append(limit_floor(extract_num(item[1], 1)))
-        print(talents)
 
         if len(talents) > 3:
             if talents[3] > talents[2]:
