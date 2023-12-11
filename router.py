@@ -16,10 +16,10 @@ weapon_origin_dict = {}
 
 def init():
     # 创建角色相关字典
-    gen_code_dict('./src/character.json', character_router_dict, character_origin_dict)
+    gen_code_dict('assets/character.json', character_router_dict, character_origin_dict)
     character_reverse_router_dict.update(dict(zip(character_router_dict.values(), character_router_dict.keys())))
     # 创建武器相关字典
-    gen_code_dict('./src/weapon.json', weapon_router_dict, weapon_origin_dict)
+    gen_code_dict('assets/weapon.json', weapon_router_dict, weapon_origin_dict)
 
 
 def gen_code_dict(src, des_router, des_origin):
